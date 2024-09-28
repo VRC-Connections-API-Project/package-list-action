@@ -289,20 +289,17 @@ namespace VRC.PackageManagement.Automation
                 Serilog.Log.Information($"Saved Listing to {savePath}.");
             });
 
-        private string MapToPublishZipUrl(string url)
-        {
-            var prefix = CurrentListingUrl.Replace(PackageListingPublishFilename, "");
-            return url
-                .Replace("https://github.com/", prefix)
-                .Replace("https://api.github.com/repos/", prefix);
-        }
-        private AbsolutePath DownloadPathForUrl(string url)
-        {
-            var suffix = url
+        private string StripZipUrl(string url) =>
+            url
                 .Replace("https://github.com/", "")
-                .Replace("https://api.github.com/repos/", "");
-            return ListPublishDirectory / suffix;
-        }
+                .Replace("https://api.github.com/repos/", "")
+                .Replace($"{GitHubActions.RepositoryOwner}/", "")
+                .Replace("releases/download/", "");
+        private string MapToPublishZipUrl(string url) =>
+            CurrentListingUrl.Replace(PackageListingPublishFilename, "")
+            + StripZipUrl(url);
+        private AbsolutePath DownloadPathForUrl(string url) =>
+            ListPublishDirectory / StripZipUrl(url);
 
         async Task SaveZipFile(string url)
         {
