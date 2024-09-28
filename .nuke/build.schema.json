@@ -6,6 +6,10 @@
     "build": {
       "type": "object",
       "properties": {
+        "AuthorizationHeader": {
+          "type": "string",
+          "description": "Authorization header for the site except GitHub"
+        },
         "Continue": {
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
