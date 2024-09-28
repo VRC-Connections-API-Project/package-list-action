@@ -89,6 +89,8 @@ namespace VRC.PackageManagement.Automation
 
         #endregion
 
+        private Dictionary<string, string> _zipAssetUrls = new();
+
         ListingSource MakeListingSourceFromManifest(VRCPackageManifest manifest)
         {
             var result = new ListingSource()
@@ -366,7 +368,12 @@ namespace VRC.PackageManagement.Automation
 
             foreach (Octokit.Release release in releases)
             {
-                result.AddRange(release.Assets.Where(asset => asset.Name.EndsWith(".zip")).Select(asset => asset.BrowserDownloadUrl));
+                var zipAssets = release.Assets.Where(asset => asset.Name.EndsWith(".zip")).ToList();
+                result.AddRange(zipAssets.Select(asset => asset.BrowserDownloadUrl));
+                foreach (var asset in zipAssets)
+                {
+                    _zipAssetUrls[asset.BrowserDownloadUrl] = asset.Url;
+                }
             }
 
             return result;
@@ -441,6 +448,7 @@ namespace VRC.PackageManagement.Automation
 
         async Task<HttpResponseMessage> GetAuthenticatedResponse(string url)
         {
+            if (_zipAssetUrls.ContainsKey(url)) url = _zipAssetUrls[url];
             using (var requestMessage =
                    new HttpRequestMessage(HttpMethod.Get, url))
             {
